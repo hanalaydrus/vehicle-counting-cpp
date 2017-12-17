@@ -1,0 +1,5 @@
+build:
+	g++ -std=c++11 main.cpp Blob.cpp `pkg-config --libs --cflags opencv` -o main -lncurses
+
+run:
+	./main
