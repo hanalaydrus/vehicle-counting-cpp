@@ -31,6 +31,7 @@
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
+using grpc::ServerWriter;
 using grpc::Status;
 using helloworld::HelloRequest;
 using helloworld::HelloReply;
@@ -38,12 +39,21 @@ using helloworld::Greeter;
 
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
-  Status SayHello(ServerContext* context, const HelloRequest* request,
-                  HelloReply* reply) override {
+  Status SayHello(ServerContext* context,
+                  const HelloRequest* request,
+                  ServerWriter<HelloReply>* writer) override {
     std::string prefix("Hello ");
-    reply->set_message(prefix + request->name());
+    // reply->set_message(prefix + request->name());
+    HelloReply r;
+    r.set_message(prefix + request->name());
+
+    for (int i = 0; i < 10; i++){
+      writer->Write(r);
+    }
     return Status::OK;
   }
+  private:
+    std::vector<HelloReply> reply_list_;
 };
 
 void RunServer() {
