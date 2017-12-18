@@ -52,8 +52,6 @@ class GreeterServiceImpl final : public Greeter::Service {
     }
     return Status::OK;
   }
-  private:
-    std::vector<HelloReply> reply_list_;
 };
 
 void RunServer() {
