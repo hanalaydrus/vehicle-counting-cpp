@@ -209,14 +209,14 @@ class GreeterServiceImpl final : public Greeter::Service {
     
             drawCarCountOnImage(carCount, imgFrame2Copy);
             std::string carCountString = std::to_string(carCount);
-
+            std::cout << "Count : " << carCountString << std::endl;
             HelloReply r;
             r.set_message(carCountString);
             writer->Write(r);
 
             // std::cout << "car count : " << carCount << std::endl;
     
-            cv::imshow("imgFrame2Copy", imgFrame2Copy);
+            // cv::imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
     
             //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
     
