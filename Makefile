@@ -1,7 +1,7 @@
 build:
-	protoc -I ../api --cpp_out=. ../api/helloworld.proto
+	protoc -I . --cpp_out=. helloworld.proto
 	g++ -std=c++11 `pkg-config --cflags protobuf grpc`  -c -o helloworld.pb.o helloworld.pb.cc
-	protoc -I ../api --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` ../api/helloworld.proto
+	protoc -I . --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` helloworld.proto
 	g++ -std=c++11 `pkg-config --cflags protobuf grpc`  -c -o helloworld.grpc.pb.o helloworld.grpc.pb.cc
 	g++ -std=c++11 `pkg-config --cflags protobuf grpc opencv`  -c -o main.o main.cc
 	g++ -std=c++11 `pkg-config --cflags opencv`  -c -o Blob.o Blob.cc
