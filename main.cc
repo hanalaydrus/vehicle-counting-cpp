@@ -70,15 +70,8 @@ class GreeterServiceImpl final : public Greeter::Service {
     Status SayHello(ServerContext* context,
                     const HelloRequest* request,
                     ServerWriter<HelloReply>* writer) override {
-        // std::string prefix("Hello ");
-        // // reply->set_message(prefix + request->name());
-        // HelloReply r;
-        // r.set_message(prefix + request->name());
 
-        // for (int i = 0; i < 10; i++){
-        //     writer->Write(r);
-        // };
-        cv::VideoCapture capVideo;
+        cv::VideoCapture cap("http://127.0.0.1:5000/video_feed");
         
         cv::Mat imgFrame1;
         cv::Mat imgFrame2;
@@ -88,23 +81,15 @@ class GreeterServiceImpl final : public Greeter::Service {
         cv::Point crossingLine[2];
     
         int carCount = 0;
-        
-        capVideo.open("CarsDrivingUnderBridge.mp4");
     
-        if (!capVideo.isOpened()) {                                                 // if unable to open video file
+        if (!cap.isOpened()) {                                                 // if unable to open video file
             std::cout << "error reading video file" << std::endl << std::endl;      // show error message
             // getch();                   // it may be necessary to change or remove this line if not using Windows
             // return(0);                                                              // and exit program
         }
     
-        if (capVideo.get(CV_CAP_PROP_FRAME_COUNT) < 2) {
-            std::cout << "error: video file must have at least two frames";
-            // getch();                   // it may be necessary to change or remove this line if not using Windows
-            // return(0);
-        }
-    
-        capVideo.read(imgFrame1);
-        capVideo.read(imgFrame2);
+        cap >> imgFrame1;
+        cap >> imgFrame2;
     
         int intHorizontalLinePosition = (int)std::round((double)imgFrame1.rows * 0.35);
     
@@ -120,7 +105,7 @@ class GreeterServiceImpl final : public Greeter::Service {
     
         int frameCount = 2;
     
-        while (capVideo.isOpened() && chCheckForEscKey != 27) {
+        while (cap.isOpened() && chCheckForEscKey != 27) {
             
             std::vector<Blob> currentFrameBlobs;
     
@@ -197,7 +182,7 @@ class GreeterServiceImpl final : public Greeter::Service {
     
             imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
     
-            drawBlobInfoOnImage(blobs, imgFrame2Copy);
+            // drawBlobInfoOnImage(blobs, imgFrame2Copy);
     
             bool blnAtLeastOneBlobCrossedTheLine = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition, carCount);
     
@@ -216,7 +201,7 @@ class GreeterServiceImpl final : public Greeter::Service {
 
             // std::cout << "car count : " << carCount << std::endl;
     
-            // cv::imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
+            cv::imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
     
             //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
     
@@ -226,13 +211,8 @@ class GreeterServiceImpl final : public Greeter::Service {
     
             imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
     
-            if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
-                capVideo.read(imgFrame2);
-            } else {
-                std::cout << "end of video\n";
-                break;
-            }
-    
+            cap >> imgFrame2;
+
             blnFirstFrame = false;
             frameCount++;
             chCheckForEscKey = cv::waitKey(1);
