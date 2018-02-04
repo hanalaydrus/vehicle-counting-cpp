@@ -55,7 +55,7 @@ const Scalar SCALAR_GREEN = Scalar(0.0, 200.0, 0.0);
 const Scalar SCALAR_RED = Scalar(0.0, 0.0, 255.0);
 
 Mat image;
-string carCountString;
+string carCountString, prevCarCountString;
 // function prototypes ////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs);
 void addBlobToExistingBlobs(Blob &currentFrameBlob, vector<Blob> &existingBlobs, int &intIndex);
@@ -68,22 +68,6 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, Mat &imgFrame2Copy);
 void RunServer();
 
-// double CountFPS() {
-//     VideoCapture video("http://127.0.0.1:5000/video_feed");
-
-//     time_t start, end;
-//     int numFrame = 120;
-//     Mat frame;
-
-//     time(&start);
-//     for (int i = 0; i < 120; i++) {
-//         video >> frame;
-//     }
-//     time(&end);
-
-//     return (numFrame/difftime(end, start));
-// }
-
 void GetFrame() {
 
     VideoCapture cap("http://127.0.0.1:5000/video_feed");
@@ -91,18 +75,21 @@ void GetFrame() {
     int numFrame = 120;
     int count;
 
-    if (!cap.isOpened()) {                                                 // if unable to open video file
-        cout << "error reading video file" << endl << endl;      // show error message
-        // getch();                   // it may be necessary to change or remove this line if not using Windows
-        // return(0);                                                              // and exit program
-    }
+    // if (!cap.isOpened()) {                                                 // if unable to open video file
+    //     cout << "error reading video file" << endl << endl;      // show error message
+    //     // getch();                   // it may be necessary to change or remove this line if not using Windows
+    //     // return(0);                                                              // and exit program
+    // }
 
-    time(&start);
     for (;;) {
         cap >> image;
         if (image.empty())
 		{
-			cout << "Input image empty get frame" << endl;
+            cout << "Input image empty get frame" << endl;
+            cap.open("http://127.0.0.1:5000/video_feed");
+            if (cap.isOpened()){
+                time(&start);
+            }
 			continue;
 		}
         count++;
@@ -268,10 +255,14 @@ class GreeterServiceImpl final : public Greeter::Service {
     Status SayHello(ServerContext* context,
                     const HelloRequest* request,
                     ServerWriter<HelloReply>* writer) override {
-
-        HelloReply r;
-        r.set_message(carCountString);
-        writer->Write(r);
+        for (;;){
+            if (prevCarCountString != carCountString){
+                prevCarCountString = carCountString;
+                HelloReply r;
+                r.set_message(carCountString);
+                writer->Write(r);
+            }
+        }
         
         return Status::OK;
     }
