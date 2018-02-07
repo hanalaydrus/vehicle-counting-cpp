@@ -16,6 +16,8 @@
  *
  */
 
+#include "boost/variant.hpp"
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -37,11 +39,8 @@ using helloworld::Greeter;
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
 
-#include<iostream>
-// #include<curses.h>           // it may be necessary to change or remove this line if not using Windows
-
 #include "Blob.h"
-
+#include "Model.h" 
 // #define SHOW_STEPS            // un-comment or comment this line to show steps or not
 
 using namespace cv;
@@ -54,8 +53,6 @@ const Scalar SCALAR_YELLOW = Scalar(0.0, 255.0, 255.0);
 const Scalar SCALAR_GREEN = Scalar(0.0, 200.0, 0.0);
 const Scalar SCALAR_RED = Scalar(0.0, 0.0, 255.0);
 
-Mat image;
-string carCountString, prevCarCountString;
 // function prototypes ////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs);
 void addBlobToExistingBlobs(Blob &currentFrameBlob, vector<Blob> &existingBlobs, int &intIndex);
@@ -68,67 +65,34 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, Mat &imgFrame2Copy);
 void RunServer();
 
-void GetFrame() {
+void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
+    Model model;
 
-    VideoCapture cap("http://127.0.0.1:5000/video_feed");
-    time_t start, end;
-    int numFrame = 120;
-    int count;
-
-    // if (!cap.isOpened()) {                                                 // if unable to open video file
-    //     cout << "error reading video file" << endl << endl;      // show error message
-    //     // getch();                   // it may be necessary to change or remove this line if not using Windows
-    //     // return(0);                                                              // and exit program
-    // }
-
-    for (;;) {
-        cap >> image;
-        if (image.empty())
-		{
-            cout << "Input image empty get frame" << endl;
-            cap.open("http://127.0.0.1:5000/video_feed");
-            if (cap.isOpened()){
-                time(&start);
-            }
-			continue;
-		}
-        count++;
-        if (count == numFrame){
-            time(&end);
-            cout << "FPS : " << (numFrame/difftime(end, start)) << endl;
-        }
-    }
-}
-
-void RunService () {
-    Mat imgFrame1;
-    Mat imgFrame2;
+    Mat image, imgFrame1, imgFrame2;
+    
+    string carCountString, prevCarCountString;
 
     vector<Blob> blobs;
 
+    int carCount = 0;
+
+    // Crossing Line Configuration
     Point crossingLine[2];
 
-    int carCount = 0;
-    
+    VideoCapture cap(url);
+
+    cap >> image;
+
     imgFrame1 = image;
     imgFrame2 = image;
-    for (;;) {
-        if (imgFrame1.empty() || imgFrame2.empty()) {
-            // cout << "Input image empty run service" << endl;
-            imgFrame1 = image;
-            imgFrame2 = image;
-        } else {
-            break;
-        }
-    }
 
-    int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * 0.35);
+    int intHorizontalLinePosition = y0;
 
-    crossingLine[0].x = 0;
-    crossingLine[0].y = intHorizontalLinePosition;
-
-    crossingLine[1].x = imgFrame1.cols - 1;
-    crossingLine[1].y = intHorizontalLinePosition;
+    crossingLine[0].x = x0;
+    crossingLine[0].y = y0;
+    
+    crossingLine[1].x = x1;
+    crossingLine[1].y = y1;
 
     char chCheckForEscKey = 0;
 
@@ -138,6 +102,19 @@ void RunService () {
 
     // while (cap.isOpened() && chCheckForEscKey != 27) {
     for (;;) {
+        model.storeData(camera_id, carCount);
+        if (image.empty())
+		{
+            cout << "Input image empty get frame" << endl;
+            cap.open(url);
+            
+            cap >> image;
+            
+            imgFrame1 = image;
+            imgFrame2 = image;
+
+			continue;
+        }
         
         vector<Blob> currentFrameBlobs;
 
@@ -225,10 +202,11 @@ void RunService () {
         }
 
         drawCarCountOnImage(carCount, imgFrame2Copy);
+        
         carCountString = to_string(carCount);
         cout << "Count : " << carCountString << endl;
 
-        imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
+        // imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
 
         //waitKey(0);                 // uncomment this line to go frame by frame for debugging
 
@@ -237,6 +215,8 @@ void RunService () {
         currentFrameBlobs.clear();
 
         imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
+        
+        cap >> image;
 
         imgFrame2 = image;
 
@@ -255,13 +235,13 @@ class GreeterServiceImpl final : public Greeter::Service {
     Status SayHello(ServerContext* context,
                     const HelloRequest* request,
                     ServerWriter<HelloReply>* writer) override {
+        HelloReply r;
+        Model model;
         for (;;){
-            if (prevCarCountString != carCountString){
-                prevCarCountString = carCountString;
-                HelloReply r;
-                r.set_message(carCountString);
-                writer->Write(r);
-            }
+            vector<string> response = model.getVolumeByID(request->id());
+			r.set_timestamp(response[0]);
+			r.set_response(response[1]);
+			writer->Write(r);
         }
         
         return Status::OK;
@@ -271,13 +251,33 @@ class GreeterServiceImpl final : public Greeter::Service {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
     // note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
-    thread first (GetFrame);
-    thread second (RunService);
-    thread third (RunServer);
+    Model model;
+    vector< map<string, boost::variant<int, string>> > cameras = model.getCameras();
+    vector<int> index;
+
+    for (int i = 0; i < cameras.size(); ++i){
+        if (!cameras[i].empty()) {
+            index.push_back(i);
+        }
+    }
+
+    thread tRunService[index.size()];
     
-    first.join();
-    second.join();
-    third.join();
+    for (int i = 0; i < index.size(); ++i){
+        tRunService[i] = thread (
+            RunService, 
+            index[i], 
+            boost::get<string>(cameras[index[i]]["url"]),
+            boost::get<int>(cameras[index[i]]["x0"]),
+            boost::get<int>(cameras[index[i]]["y0"]),
+            boost::get<int>(cameras[index[i]]["x1"]),
+            boost::get<int>(cameras[index[i]]["y1"])
+        );
+    }
+
+    for (int i = 0; i < cameras.size(); ++i){
+		tRunService[i].join();
+	}
 
     return(0);
 }
