@@ -24,16 +24,16 @@
 #include <thread>
 #include <grpc++/grpc++.h>
 
-#include "helloworld.grpc.pb.h"
+#include "volumeContract.grpc.pb.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
+using volumeContract::HelloRequest;
+using volumeContract::HelloReply;
+using volumeContract::Greeter;
 
 #include<opencv2/core/core.hpp>
 #include<opencv2/highgui/highgui.hpp>
@@ -102,7 +102,7 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
 
     // while (cap.isOpened() && chCheckForEscKey != 27) {
     for (;;) {
-        model.storeData(camera_id, carCount);
+        model.storeVolumeData(camera_id, carCount);
         if (image.empty())
 		{
             cout << "Input image empty get frame" << endl;
@@ -238,9 +238,11 @@ class GreeterServiceImpl final : public Greeter::Service {
         HelloReply r;
         Model model;
         for (;;){
-            vector<string> response = model.getVolumeByID(request->id());
-			r.set_timestamp(response[0]);
-			r.set_response(response[1]);
+            vector<boost::variant<int, string>> response = model.getVolumeByID(request->id());
+            float percentage = model.getPercentage(request->id(), boost::get<string>(response[0]), boost::get<int>(response[1]));
+			r.set_timestamp(boost::get<string>(response[0]));
+            r.set_volume(boost::get<int>(response[1]));
+            r.set_percentage(50);
 			writer->Write(r);
         }
         
@@ -275,9 +277,12 @@ int main(void) {
         );
     }
 
+    thread tRunServer (RunServer);
+
     for (int i = 0; i < cameras.size(); ++i){
 		tRunService[i].join();
-	}
+    }
+    tRunServer.join();
 
     return(0);
 }
@@ -384,7 +389,7 @@ double distanceBetweenPoints(Point point1, Point point2) {
     return(sqrt(pow(intX, 2) + pow(intY, 2)));
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 void drawAndShowContours(Size imageSize, vector<vector<Point> > contours, string strImageName) {
     Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
 

@@ -19,7 +19,7 @@ option java_package = "io.grpc.examples.helloworld";
 option java_outer_classname = "HelloWorldProto";
 option objc_class_prefix = "HLW";
 
-package helloworld;
+package volumeContract;
 
 // The greeting service definition.
 service Greeter {
@@ -35,5 +35,6 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string timestamp = 1;
-  string response = 2;
+  int32 volume = 2;
+  float percentage = 3;
 }

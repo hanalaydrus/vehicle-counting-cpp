@@ -22,8 +22,9 @@ public:
     Model();
     
     vector< map<string, boost::variant<int, string>> > getCameras();
-    void storeData(int camera_id, int volume_size);
-    vector<string> getVolumeByID(int camera_id);
+    void storeVolumeData(int camera_id, int volume_size);
+    vector<boost::variant<int, string>> getVolumeByID(int camera_id);
+    float getPercentage(int camera_id, string date_time, int volume_size);
 
 };
 

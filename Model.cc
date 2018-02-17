@@ -67,7 +67,7 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 	  return cameras;
 }
 
-void Model::storeData(int camera_id, int volume_size) {
+void Model::storeVolumeData(int camera_id, int volume_size) {
 	// Input : camera_id
 	// Output : -
     bool isExist = false;
@@ -120,10 +120,10 @@ void Model::storeData(int camera_id, int volume_size) {
 	  }
 }
 
-vector<string> Model::getVolumeByID(int camera_id) {
+vector<boost::variant<int, string>> Model::getVolumeByID(int camera_id) {
 	// Input : camera_id
 	// Output : time, density
-	vector<string> response;
+	vector<boost::variant<int, string>> response;
 	try {
 		sql::Driver *driver;
 		sql::Connection *con;
@@ -142,7 +142,7 @@ vector<string> Model::getVolumeByID(int camera_id) {
 		res = stmt->executeQuery(query.str());
 		while (res->next()) {
 			response.push_back(res->getString("date_time"));
-			response.push_back(res->getString("volume_size"));
+			response.push_back(res->getInt("volume_size"));
 		}
 		delete res;
 		delete stmt;
@@ -156,4 +156,44 @@ vector<string> Model::getVolumeByID(int camera_id) {
 	  }
 
 	  return response;
+}
+
+float Model::getPercentage(int camera_id, string date_time, int volume_size){
+
+	float percentage;
+	int volume_normal_size;
+
+	try {
+		sql::Driver *driver;
+		sql::Connection *con;
+		sql::Statement *stmt;
+		sql::ResultSet *res;
+	  
+		/* Create a connection */
+		driver = get_driver_instance();
+		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+		/* Connect to the MySQL test database */
+		con->setSchema("volume");
+	  
+		stmt = con->createStatement();
+		ostringstream query;
+		query << "SELECT * FROM `volume_normal` WHERE `camera_id` = " << camera_id << " ORDER BY ABS(`time` - TIME('" << date_time << "')) LIMIT 1";
+		res = stmt->executeQuery(query.str());
+		while (res->next()) {
+			volume_normal_size = res->getInt("volume_normal_size");
+		}
+		delete res;
+		delete stmt;
+		delete con;
+	  
+	  } catch (sql::SQLException &e) {
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	  }
+
+	percentage = ((volume_size - volume_normal_size) / volume_normal_size * 100);
+
+	return percentage;
 }
