@@ -17,7 +17,7 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 		sql::Connection *con;
 		sql::Statement *stmt;
 		sql::ResultSet *res;
-	  
+
 		/* Create a connection */
 		driver = get_driver_instance();
 		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
@@ -68,7 +68,7 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 }
 
 void Model::storeVolumeData(int camera_id, int volume_size) {
-	// Input : camera_id
+	// Input : camera_id, volume_size
 	// Output : -
     bool isExist = false;
     int volume_history_id, current_volume_size;
@@ -77,7 +77,7 @@ void Model::storeVolumeData(int camera_id, int volume_size) {
 		sql::Connection *con;
 		sql::Statement *stmt;
 		sql::ResultSet *res;
-	  
+
 		/* Create a connection */
 		driver = get_driver_instance();
 		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
@@ -122,26 +122,28 @@ void Model::storeVolumeData(int camera_id, int volume_size) {
 
 vector<boost::variant<int, string>> Model::getVolumeByID(int camera_id) {
 	// Input : camera_id
-	// Output : time, density
+	// Output : time, volume
 	vector<boost::variant<int, string>> response;
 	try {
 		sql::Driver *driver;
 		sql::Connection *con;
 		sql::Statement *stmt;
 		sql::ResultSet *res;
-	  
+
 		/* Create a connection */
 		driver = get_driver_instance();
 		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+	  
 		/* Connect to the MySQL test database */
 		con->setSchema("volume");
 	  
 		stmt = con->createStatement();
 		ostringstream query;
-		query << "SELECT * FROM `volume_history` WHERE `camera_id` = " << camera_id;
+		query << "SELECT * FROM `volume_history` WHERE DATE(`date_time`) = CURDATE() AND `camera_id` = " << camera_id;
 		res = stmt->executeQuery(query.str());
 		while (res->next()) {
 			response.push_back(res->getString("date_time"));
+			// cout << "count mysql : " << res->getInt("volume_size") << ", camera_id: " << camera_id << endl;
 			response.push_back(res->getInt("volume_size"));
 		}
 		delete res;
@@ -168,10 +170,11 @@ float Model::getPercentage(int camera_id, string date_time, int volume_size){
 		sql::Connection *con;
 		sql::Statement *stmt;
 		sql::ResultSet *res;
-	  
+
 		/* Create a connection */
 		driver = get_driver_instance();
 		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+	  
 		/* Connect to the MySQL test database */
 		con->setSchema("volume");
 	  
@@ -186,14 +189,14 @@ float Model::getPercentage(int camera_id, string date_time, int volume_size){
 		delete stmt;
 		delete con;
 	  
-	  } catch (sql::SQLException &e) {
+	} catch (sql::SQLException &e) {
 		cout << "# ERR: SQLException in " << __FILE__;
 		cout << "# ERR: " << e.what();
 		cout << " (MySQL error code: " << e.getErrorCode();
 		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-	  }
-
-	percentage = ((volume_size - volume_normal_size) / volume_normal_size * 100);
+	}
+	// cout << "volume_size: " << volume_size << ", volume_normal_size" << volume_normal_size << endl; 
+	percentage = ((( (float)volume_size - (float)volume_normal_size ) / (float)volume_normal_size) * 100);
 
 	return percentage;
 }

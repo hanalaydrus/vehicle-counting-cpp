@@ -203,8 +203,8 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
 
         drawCarCountOnImage(carCount, imgFrame2Copy);
         
-        carCountString = to_string(carCount);
-        cout << "Count : " << carCountString << endl;
+        // carCountString = to_string(carCount);
+        // cout << "Count : " << carCount << ", camera_id: " << camera_id << endl;
 
         // imshow("imgFrame2Copy", imgFrame2Copy); // THIS IS MAIN SHOW
 
@@ -237,13 +237,21 @@ class GreeterServiceImpl final : public Greeter::Service {
                     ServerWriter<HelloReply>* writer) override {
         HelloReply r;
         Model model;
-        for (;;){
-            vector<boost::variant<int, string>> response = model.getVolumeByID(request->id());
-            float percentage = model.getPercentage(request->id(), boost::get<string>(response[0]), boost::get<int>(response[1]));
-			r.set_timestamp(boost::get<string>(response[0]));
+        vector<boost::variant<int, string>> response;
+        float percentage;
+        while (true) {
+            response = model.getVolumeByID(request->id());
+            percentage = model.getPercentage(request->id(), boost::get<string>(response[0]), boost::get<int>(response[1]));
+            r.set_timestamp(boost::get<string>(response[0]));
+            cout << "count: " << boost::get<int>(response[1]) << ", camera_id: "  << request->id() << endl;
             r.set_volume(boost::get<int>(response[1]));
-            r.set_percentage(50);
-			writer->Write(r);
+            cout << "percentage: " << percentage << endl;
+            r.set_percentage(percentage);
+            writer->Write(r);
+            
+            if (context->IsCancelled()){
+                break;
+            }
         }
         
         return Status::OK;
