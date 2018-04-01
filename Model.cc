@@ -2,6 +2,10 @@
 
 #include "Model.h"
 
+string dbHost = getenv("DB_HOST");
+string dbUser = getenv("DB_USER");
+string dbPass = getenv("DB_PASSWORD");
+
 Model::Model(){
 
 }
@@ -20,7 +24,8 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 
 		/* Create a connection */
 		driver = get_driver_instance();
-		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+		con = driver->connect(dbHost, dbUser, dbPass);
+		
 		/* Connect to the MySQL  database */
 		con->setSchema("camera");
 	  

@@ -11,8 +11,10 @@
 #include <cppconn/statement.h>
 #include "boost/variant.hpp"
 #include <iostream>
+#include <vector>
 #include <string>
 #include <sstream>
+#include <stdlib.h>
 
 using namespace std;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
