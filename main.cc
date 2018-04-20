@@ -244,9 +244,9 @@ class GreeterServiceImpl final : public Greeter::Service {
             response = model.getVolumeByID(request->id());
             percentage = model.getPercentage(request->id(), boost::get<string>(response[0]), boost::get<int>(response[1]));
             r.set_timestamp(boost::get<string>(response[0]));
-            cout << "count: " << boost::get<int>(response[1]) << ", camera_id: "  << request->id() << endl;
+            // cout << "count: " << boost::get<int>(response[1]) << ", camera_id: "  << request->id() << endl;
             r.set_volume(boost::get<int>(response[1]));
-            cout << "percentage: " << percentage << endl;
+            // cout << "percentage: " << percentage << endl;
             r.set_percentage(percentage);
             writer->Write(r);
             
@@ -254,7 +254,7 @@ class GreeterServiceImpl final : public Greeter::Service {
                 break;
             }
         }
-        
+
         return Status::OK;
     }
 };
@@ -262,36 +262,35 @@ class GreeterServiceImpl final : public Greeter::Service {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
     // note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
-    
     Model model;
     vector< map<string, boost::variant<int, string>> > cameras = model.getCameras();
     vector<int> index;
 
-    // for (int i = 0; i < cameras.size(); ++i){
-    //     if (!cameras[i].empty()) {
-    //         index.push_back(i);
-    //     }
-    // }
+    for (int i = 0; i < cameras.size(); ++i){
+        if (!cameras[i].empty()) {
+            index.push_back(i);
+        }
+    }
 
-    // thread tRunService[index.size()];
+    thread tRunService[index.size()];
     
-    // for (int i = 0; i < index.size(); ++i){
-    //     tRunService[i] = thread (
-    //         RunService, 
-    //         index[i], 
-    //         boost::get<string>(cameras[index[i]]["url"]),
-    //         boost::get<int>(cameras[index[i]]["x0"]),
-    //         boost::get<int>(cameras[index[i]]["y0"]),
-    //         boost::get<int>(cameras[index[i]]["x1"]),
-    //         boost::get<int>(cameras[index[i]]["y1"])
-    //     );
-    // }
+    for (int i = 0; i < index.size(); ++i){
+        tRunService[i] = thread (
+            RunService, 
+            index[i], 
+            boost::get<string>(cameras[index[i]]["url"]),
+            boost::get<int>(cameras[index[i]]["x0"]),
+            boost::get<int>(cameras[index[i]]["y0"]),
+            boost::get<int>(cameras[index[i]]["x1"]),
+            boost::get<int>(cameras[index[i]]["y1"])
+        );
+    }
 
     thread tRunServer (RunServer);
 
-    // for (int i = 0; i < cameras.size(); ++i){
-	// 	tRunService[i].join();
-    // }
+    for (int i = 0; i < cameras.size(); ++i){
+		tRunService[i].join();
+    }
     tRunServer.join();
 
     return(0);

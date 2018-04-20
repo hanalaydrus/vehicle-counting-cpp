@@ -9,14 +9,19 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
-#include "boost/variant.hpp"
+#include <boost/variant.hpp>
+#include <curl/curl.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <stdlib.h>
 
+#include <stdio.h>
+#include "json.hpp"
+
 using namespace std;
+using json = nlohmann::json;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class Model {
 public:

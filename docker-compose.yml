@@ -1,30 +1,61 @@
-version: '3.3'
+version: '3'
 
 services:
-  db:
-    image: mysql:5.7
+  db-volume:
+    image: mariadb:10.3
+    container_name: db-volume
     volumes:
-      - dbdata:/var/lib/mysql
-    restart: always
+      - container-volume:/var/lib/mysql
+      - ./volume.sql:/docker-entrypoint-initdb.d/volume.sql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: camera
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: volume
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    restart: always
 
-  service:
+  phpmyadmin-volume:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-volume
+    links:
+      - db-volume
+    ports:
+      - "8081:80"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOST: db-volume:3306
+    restart: always
+
+  volume-service:
+    build: .
+    container_name: volume-service
     depends_on:
-      - db
-    image: volume-of-vehicles:latest
+      - db-volume
+    links:
+      - db-volume
+    external_links:
+      - camera-service
+      - traffic-streaming-service
     ports:
       - "50051:50051"
-    restart: always
     environment:
-      DB_HOST: db:3306
-      DB_USER: root
-      DB_PASSWORD: root
-    
+      DB_HOST: "db-volume"
+      DB_PORT: "3306"
+      DB_NAME: "volume"
+      DB_ROOT_PASS: "root"
+      CAMERA_HOST: "camera-service"
+      CAMERA_PORT: "50052"
+    restart: always
+    networks:
+      - default
+      - camera_default
+      - trafficstreaming_default
+
 volumes:
-  dbdata:
+  container-volume:
+
+networks:
+  camera_default:
+    external: true
+  trafficstreaming_default:
+    external: true

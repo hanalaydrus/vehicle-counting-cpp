@@ -2,20 +2,57 @@
 
 #include "Model.h"
 
-string dbHost = getenv("DB_HOST");
-string dbUser = getenv("DB_USER");
-string dbPass = getenv("DB_PASSWORD");
-
 Model::Model(){
 
 }
 
+size_t writeFunction(void *ptr, size_t size, size_t nmemb, std::string* data) {
+    data->append((char*) ptr, size * nmemb);
+    return size * nmemb;
+}
 
 vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 	// Input : -
 	// Output : Array of Map
     vector< map<string, boost::variant<int, string>> > cameras;
-    
+    string response_string;
+
+    CURL *curl;
+	CURLcode res;
+
+	curl = curl_easy_init();
+
+	if(curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, "http://camera-service:50052/camera");
+		/* example.com is redirected, so we tell libcurl to follow redirection */ 
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
+
+		/* Perform the request, res will get the return code */ 
+		res = curl_easy_perform(curl);
+		/* Check for errors */ 
+		if(res != CURLE_OK)
+		  fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+
+		/* always cleanup */ 
+		curl_easy_cleanup(curl);
+	}
+
+	auto j = json::parse(response_string);
+
+	if (j["status"] == "success") {
+		for (int i = 0; i < 6; i++) {
+			map<string, boost::variant<int, string>> data;
+
+			string data_detail = j["data"][i]["url"];
+            data["url"] = data_detail;
+
+            cameras.resize(i+2);
+            cameras.at(i+1) = data;
+		}
+	}
+
 	try {
 		sql::Driver *driver;
 		sql::Connection *con;
@@ -24,25 +61,10 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 
 		/* Create a connection */
 		driver = get_driver_instance();
-		con = driver->connect(dbHost, dbUser, dbPass);
-		
-		/* Connect to the MySQL  database */
-		con->setSchema("camera");
-	  
-		stmt = con->createStatement();
-		res = stmt->executeQuery("SELECT * FROM `camera`");
-		while (res->next()) {
-          /* Access column data by alias or column name */
-            map<string, boost::variant<int, string>> data;
-            data["url"] = res->getString("url");
+		con = driver->connect("tcp://db-volume:3306", "root", "root");
 
-            cameras.resize((res->getInt("camera_id"))+1);
-
-            cameras.at(res->getInt("camera_id")) = data;
-        }
         // configuration
         con->setSchema("volume");
-        
         stmt = con->createStatement();
         res = stmt->executeQuery("SELECT * FROM `configuration`");
         while (res->next()) {
@@ -62,14 +84,14 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 		delete stmt;
 		delete con;
 	  
-	  } catch (sql::SQLException &e) {
+	} catch (sql::SQLException &e) {
 		cout << "# ERR: SQLException in " << __FILE__;
 		cout << "# ERR: " << e.what();
 		cout << " (MySQL error code: " << e.getErrorCode();
 		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-	  }
-	  
-	  return cameras;
+	}
+
+    return cameras;
 }
 
 void Model::storeVolumeData(int camera_id, int volume_size) {
@@ -85,7 +107,7 @@ void Model::storeVolumeData(int camera_id, int volume_size) {
 
 		/* Create a connection */
 		driver = get_driver_instance();
-		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+		con = driver->connect("db-volume", "root", "root");
 		/* Connect to the MySQL  database */
 		con->setSchema("volume");
 	  
@@ -137,7 +159,7 @@ vector<boost::variant<int, string>> Model::getVolumeByID(int camera_id) {
 
 		/* Create a connection */
 		driver = get_driver_instance();
-		con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
+		con = driver->connect("db-volume", "root", "root");
 	  
 		/* Connect to the MySQL test database */
 		con->setSchema("volume");
