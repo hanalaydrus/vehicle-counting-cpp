@@ -10,8 +10,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: volume
-    ports:
-      - "3307:3306"
     restart: always
 
   phpmyadmin-volume:
@@ -20,7 +18,7 @@ services:
     links:
       - db-volume
     ports:
-      - "8081:80"
+      - "9002:80"
     environment:
       MYSQL_ROOT_PASSWORD: root
       PMA_HOST: db-volume:3306
@@ -36,8 +34,8 @@ services:
     external_links:
       - camera-service
       - traffic-streaming-service
-    ports:
-      - "50051:50051"
+#    ports:
+#      - "50051:50051"
     environment:
       DB_HOST: "db-volume"
       DB_PORT: "3306"
