@@ -13,3 +13,14 @@ run:
 
 clean:
 	rm -f *.o *.pb.cc *.pb.h main
+
+build_db_image:
+	docker build -t asia.gcr.io/tugas-akhir-hana/mariadb-volume:latest ./mariadb/
+
+# if no trigger at google container registry
+# build_service_image:
+# 	docker build -t asia.gcr.io/tugas-akhir-hana/volume-of-vehicle:latest .
+
+push_gcp_image:
+	docker push asia.gcr.io/tugas-akhir-hana/mariadb-volume:latest
+	# docker push asia.gcr.io/tugas-akhir-hana/volume-of-vehicle:latest

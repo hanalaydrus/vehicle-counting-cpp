@@ -2,14 +2,12 @@ version: '3'
 
 services:
   db-volume:
-    image: mariadb:10.3
+    image: asia.gcr.io/tugas-akhir-hana/mariadb-volume:latest
     container_name: db-volume
     volumes:
       - container-volume:/var/lib/mysql
-      - ./volume.sql:/docker-entrypoint-initdb.d/volume.sql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: volume
     restart: always
 
   phpmyadmin-volume:
