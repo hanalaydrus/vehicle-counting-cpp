@@ -101,7 +101,6 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
 
     int frameCount = 2;
 
-    // while (cap.isOpened() && chCheckForEscKey != 27) {
     for (;;) {
         model.storeVolumeData(camera_id, carCount);
         if (image.empty())
@@ -288,7 +287,7 @@ int main(void) {
 
     thread tRunServer (RunServer);
 
-    for (int i = 0; i < cameras.size(); ++i){
+    for (int i = 0; i < index.size(); ++i){
 		tRunService[i].join();
     }
     tRunServer.join();

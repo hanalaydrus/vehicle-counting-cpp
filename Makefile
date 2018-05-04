@@ -6,7 +6,7 @@ build:
 	g++ -std=c++11 `pkg-config --cflags --libs protobuf grpc opencv`  -c -o main.o main.cc
 	g++ -std=c++11 `pkg-config --cflags opencv`  -c -o Blob.o Blob.cc
 	g++ -std=c++11 -c -o Model.o Model.cc
-	g++ volumeContract.pb.o volumeContract.grpc.pb.o main.o Blob.o Model.o -I/usr/inlude/cppconn -L/usr/lib -lmysqlcppconn -lcurl -L/usr/local/lib `pkg-config --cflags --libs protobuf grpc++ grpc opencv` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -o main
+	g++ volumeContract.pb.o volumeContract.grpc.pb.o main.o Blob.o Model.o -I/usr/inlude/cppconn -L/usr/lib -lmysqlcppconn -lcurl -L/usr/local/lib `pkg-config --cflags --libs protobuf grpc++ grpc opencv` -Wl,--no-as-needed -lgrpc++_reflection -ldl -o main
 
 run:
 	./main
