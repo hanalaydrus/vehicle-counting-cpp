@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db-volume:
-    image: asia.gcr.io/tugas-akhir-hana/mariadb-volume:latest
+    build: ./mariadb
     container_name: db-volume
     volumes:
       - container-volume:/var/lib/mysql

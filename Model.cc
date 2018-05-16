@@ -235,3 +235,40 @@ float Model::getPercentage(int camera_id, string date_time, int volume_size){
 
 	return percentage;
 }
+
+void Model::logging(vector< vector<boost::variant<int, string>> > log) {
+	// Input : camera_id, volume_size
+	// Output : -
+    while (true){
+		try {
+			sql::Driver *driver;
+			sql::Connection *con;
+			sql::Statement *stmt;
+
+			/* Create a connection */
+			driver = get_driver_instance();
+			con = driver->connect("tcp://db-volume:3306", "root", "root");
+			/* Connect to the MySQL  database */
+			con->setSchema("volume");
+			stmt = con->createStatement();
+			cout << "Currently inserting log ...." << endl;
+			cout << "size " << log.size() << endl;
+		  	for (int i = 0; i < log.size(); i++){
+		  		// cout << "insert log " << i << endl;
+	            ostringstream query;
+	            query << "INSERT INTO `log` (`camera_id`, `time`, `concurrency`) VALUES ('" << boost::get<string>(log[i][0]) << "', '" << boost::get<string>(log[i][1]) << "', " << boost::get<int>(log[i][2]) <<")";
+	            stmt->execute(query.str());
+        	}
+
+			delete stmt;
+			delete con;
+			break;
+		  
+		} catch (sql::SQLException &e) {
+			cout << "# ERR: SQLException in " << __FILE__;
+			cout << "# ERR: " << e.what();
+			cout << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+	}
+}

@@ -31,6 +31,7 @@ public:
     void storeVolumeData(int camera_id, int volume_size);
     vector<boost::variant<int, string>> getVolumeByID(int camera_id);
     float getPercentage(int camera_id, string date_time, int volume_size);
+    void logging(vector< vector<boost::variant<int, string>> > log);
 
 };
 

@@ -1,13 +1,15 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu2
--- http://www.phpmyadmin.net
+-- version 4.8.0
+-- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 06, 2018 at 10:19 PM
--- Server version: 5.7.21-0ubuntu0.16.04.1
--- PHP Version: 7.1.11-1+ubuntu16.04.1+deb.sury.org+1
+-- Generation Time: May 15, 2018 at 01:38 AM
+-- Server version: 5.7.21
+-- PHP Version: 7.1.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -46,6 +48,19 @@ INSERT INTO `configuration` (`config_id`, `camera_id`, `crossing_line_x0`, `cros
 (4, 4, 380, 400, 780, 400),
 (5, 5, 320, 400, 780, 400),
 (6, 6, 320, 400, 780, 400);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `log`
+--
+
+CREATE TABLE `log` (
+  `id` int(20) NOT NULL,
+  `camera_id` varchar(5) NOT NULL,
+  `time` varchar(50) NOT NULL,
+  `concurrency` int(5) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -419,6 +434,12 @@ ALTER TABLE `configuration`
   ADD PRIMARY KEY (`config_id`);
 
 --
+-- Indexes for table `log`
+--
+ALTER TABLE `log`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `volume_history`
 --
 ALTER TABLE `volume_history`
@@ -439,16 +460,26 @@ ALTER TABLE `volume_normal`
 --
 ALTER TABLE `configuration`
   MODIFY `config_id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `log`
+--
+ALTER TABLE `log`
+  MODIFY `id` int(20) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `volume_history`
 --
 ALTER TABLE `volume_history`
   MODIFY `volume_history_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+
 --
 -- AUTO_INCREMENT for table `volume_normal`
 --
 ALTER TABLE `volume_normal`
   MODIFY `volume_normal_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=289;
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
