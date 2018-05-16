@@ -66,6 +66,8 @@ string printTime(){
     return dt;
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
     Status SayHello(ServerContext* context,
@@ -91,7 +93,7 @@ class GreeterServiceImpl final : public Greeter::Service {
 
         cout << "start process" << endl;
 
-        for (int i = 0; i < 1001; ++i) {
+        for (int i = 0; i < 1000; ++i) {
             // cout << "stream " << i << endl;
             vector<boost::variant<int, string>> logs;
             response = model.getVolumeByID(request->id());
