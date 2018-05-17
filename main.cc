@@ -116,7 +116,7 @@ class GreeterServiceImpl final : public Greeter::Service {
             }
         }
         model.logging(log);
-        cout << "Finish check log" << endl;
+        cout << "Finish check log cc: " << conccurrent << endl;
         return Status::OK;
     }
 };
