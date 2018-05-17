@@ -71,11 +71,12 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
 
     Mat image, imgFrame1, imgFrame2;
     
-    string carCountString, prevCarCountString;
+    string carCountString;
 
     vector<Blob> blobs;
 
     int carCount = 0;
+    int prevCarCount = 0;
 
     // Crossing Line Configuration
     Point crossingLine[2];
@@ -102,7 +103,6 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
     int frameCount = 2;
 
     for (;;) {
-        model.storeVolumeData(camera_id, carCount);
         if (image.empty())
 		{
             cout << "Input image empty get frame" << endl;
@@ -222,6 +222,12 @@ void RunService (int camera_id, string url, int x0, int y0, int x1, int y1) {
 
         blnFirstFrame = false;
         frameCount++;
+
+        if (carCount != prevCarCount) {
+            model.storeVolumeData(camera_id, carCount);
+            prevCarCount = carCount;
+        }
+
         chCheckForEscKey = waitKey(1);
     }
 
