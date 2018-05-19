@@ -17,6 +17,7 @@
  */
 
 #include "boost/variant.hpp"
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
@@ -28,6 +29,13 @@
 #include "boost/variant.hpp"
 #include "volumeContract.grpc.pb.h"
 
+#include "Model.h" 
+#include "Volume.h"
+
+using namespace std::chrono;
+using namespace cv;
+using namespace std;
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -36,12 +44,6 @@ using grpc::Status;
 using volumeContract::HelloRequest;
 using volumeContract::HelloReply;
 using volumeContract::Greeter;
-
-#include "Model.h" 
-#include "Volume.h"
-
-using namespace cv;
-using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -58,12 +60,9 @@ char genRandom()
 
 int conccurrent = 0;
 
-string printTime(){
-    time_t now = time(0);
-    tm *gmtm = gmtime(&now);
-    char* dt = asctime(gmtm);
-
-    return dt;
+int printTime(){
+    milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+    return ms.count();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
