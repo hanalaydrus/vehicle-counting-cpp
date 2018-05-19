@@ -60,9 +60,9 @@ char genRandom()
 
 int conccurrent = 0;
 
-int printTime(){
+string printTime(){
     milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
-    return ms.count();
+    return to_string(ms.count());
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ class GreeterServiceImpl final : public Greeter::Service {
             logs.push_back(Str);
             logs.push_back(printTime());
             logs.push_back(conccurrent);
-
+            
             log.push_back(logs);
             
             if (context->IsCancelled()){

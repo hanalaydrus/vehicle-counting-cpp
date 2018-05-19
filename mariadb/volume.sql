@@ -58,7 +58,7 @@ INSERT INTO `configuration` (`config_id`, `camera_id`, `crossing_line_x0`, `cros
 CREATE TABLE `log` (
   `id` int(20) NOT NULL,
   `camera_id` varchar(5) NOT NULL,
-  `time` int(20) NOT NULL,
+  `time` varchar(50) NOT NULL,
   `concurrency` int(5) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
