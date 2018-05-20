@@ -110,7 +110,6 @@ class GreeterServiceImpl final : public Greeter::Service {
             log.push_back(logs);
             
             if (context->IsCancelled()){
-                conccurrent--;
                 break;
             }
         }
