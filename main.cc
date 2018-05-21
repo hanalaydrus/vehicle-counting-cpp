@@ -75,13 +75,9 @@ class GreeterServiceImpl final : public Greeter::Service {
 
         vector< vector<boost::variant<int, string>> > log;
 
-        srand(time(0));
+        int camera_id = request->id() % 10;
         string Str = to_string(request->id());
-        for(unsigned int i = 0; i < 3; ++i)
-        {
-            Str += genRandom();
 
-        }
         conccurrent++;
 
         // handle request
@@ -95,10 +91,10 @@ class GreeterServiceImpl final : public Greeter::Service {
         for (int i = 0; i < 1000; ++i) {
             // cout << "stream " << i << endl;
             vector<boost::variant<int, string>> logs;
-            response = model.getVolumeByID(request->id());
-            percentage = model.getPercentage(request->id(), boost::get<string>(response[0]), boost::get<int>(response[1]));
+            response = model.getVolumeByID(camera_id);
+            percentage = model.getPercentage(camera_id, boost::get<string>(response[0]), boost::get<int>(response[1]));
             r.set_timestamp(boost::get<string>(response[0]));
-            // cout << "count: " << boost::get<int>(response[1]) << ", camera_id: "  << request->id() << endl;
+            // cout << "count: " << boost::get<int>(response[1]) << ", camera_id: "  << camera_id << endl;
             r.set_volume(boost::get<int>(response[1]));
             // cout << "percentage: " << percentage << endl;
             r.set_percentage(percentage);
