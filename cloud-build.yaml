@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'asia.gcr.io/$PROJECT_ID/volume-service:error2', '.' ]
+images:
+- 'asia.gcr.io/$PROJECT_ID/volume-service'
+options:
+    machineType: 'N1_HIGHCPU_8'
