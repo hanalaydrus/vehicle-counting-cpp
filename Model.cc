@@ -79,6 +79,10 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 
 	            cameras.at(res->getInt("camera_id")) = data;
 	        }
+	        
+	        res->close();
+	        stmt->close();
+	        con->close();
 
 			delete res;
 			delete stmt;
@@ -137,6 +141,9 @@ void Model::storeVolumeData(int camera_id, int volume_size) {
 	            query << "INSERT INTO `volume_history` (`camera_id`, `volume_size`) VALUES (" << camera_id << ", " << volume_size << ")";
 	            stmt->execute(query.str());
 	        }
+	        res->close();
+	        stmt->close();
+	        con->close();
 
 			delete res;
 			delete stmt;
@@ -179,6 +186,10 @@ vector<boost::variant<int, string>> Model::getVolumeByID(int camera_id) {
 				// cout << "count mysql : " << res->getInt("volume_size") << ", camera_id: " << camera_id << endl;
 				response.push_back(res->getInt("volume_size"));
 			}
+			res->close();
+	        stmt->close();
+	        con->close();
+
 			delete res;
 			delete stmt;
 			delete con;
@@ -219,6 +230,10 @@ float Model::getPercentage(int camera_id, string date_time, int volume_size){
 			while (res->next()) {
 				volume_normal_size = res->getInt("volume_normal_size");
 			}
+			res->close();
+	        stmt->close();
+	        con->close();
+
 			delete res;
 			delete stmt;
 			delete con;
