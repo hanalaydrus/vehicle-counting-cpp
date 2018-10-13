@@ -61,7 +61,7 @@ vector< map<string, boost::variant<int, string>> > Model::getCameras() {
 
 			/* Create a connection */
 			driver = get_driver_instance();
-			con = driver->connect("tcp://db-volume:3306", "root", "root");
+			con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
 
 	        // configuration
 	        con->setSchema("volume");
@@ -114,7 +114,7 @@ void Model::storeVolumeData(int camera_id, int volume_size) {
 
 			/* Create a connection */
 			driver = get_driver_instance();
-			con = driver->connect("tcp://db-volume:3306", "root", "root");
+			con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
 			/* Connect to the MySQL  database */
 			con->setSchema("volume");
 		  
@@ -172,7 +172,7 @@ vector<boost::variant<int, string>> Model::getVolumeByID(int camera_id) {
 
 			/* Create a connection */
 			driver = get_driver_instance();
-			con = driver->connect("tcp://db-volume:3306", "root", "root");
+			con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
 		  
 			/* Connect to the MySQL test database */
 			con->setSchema("volume");
@@ -218,7 +218,7 @@ float Model::getPercentage(int camera_id, string date_time, int volume_size){
 
 			/* Create a connection */
 			driver = get_driver_instance();
-			con = driver->connect("tcp://db-volume:3306", "root", "root");
+			con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
 		  
 			/* Connect to the MySQL test database */
 			con->setSchema("volume");
