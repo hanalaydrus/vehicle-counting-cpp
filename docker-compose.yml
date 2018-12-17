@@ -32,8 +32,8 @@ services:
     external_links:
       - camera-service
       - traffic-streaming-service
-#    ports:
-#      - "50051:50051"
+    ports:
+      - "50051:50051"
     environment:
       DB_HOST: "db-volume"
       DB_PORT: "3306"
