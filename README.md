@@ -21,4 +21,4 @@ https://docs.docker.com/compose/install/
 
 **4. Run** `docker-compose up --build` **or** `sudo docker-compose up --build`
 
-**5. The camera service should already run**, you could check it through `docker ps`
+**5. The volume service should already run**, you could check it through `docker ps`
